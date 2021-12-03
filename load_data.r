@@ -32,3 +32,10 @@ dbExecute(con, 'COPY pessoa (tipo_envolvimento, sexo, idade, cor, profissao, gra
 df_lugar <- df %>% distinct(latitude, longitude, cidade, logradouro, numero_logradouro)
 write.table(df_lugar, 'tmp/lugar_dimension.csv', row.names=FALSE, col.names=FALSE, sep=',', na = "")
 dbExecute(con, 'COPY lugar (latitude, longitude, cidade, logradouro, numero_logradouro) FROM \'/app/tmp/lugar_dimension.csv\' DELIMITER \',\' CSV;')
+
+delegacia.registro.df <- df %>% select('NOME_DEPARTAMENTO', 'NOME_SECCIONAL', 'DELEGACIA')
+delegacia.circ.df <- df %>% select('NOME_DEPARTAMENTO_CIRC', 'NOME_SECCIONAL_CIRC', 'NOME_DELEGACIA_CIRC')
+colnames(delegacia.circ.df) <- c('NOME_DEPARTAMENTO', 'NOME_SECCIONAL', 'DELEGACIA')
+delegacia.df <- union(delegacia.registro.df, delegacia.circ.df)
+write.table(delegacia.df, 'tmp/delegacia_dimension.csv', row.names=FALSE, col.names=FALSE, sep = ',')
+dbExecute(con, 'COPY delegacia (nome_departamento, nome_seccional, nome_delegacia) FROM \'/app/tmp/delegacia_dimension.csv\' DELIMITER \',\' CSV;')
