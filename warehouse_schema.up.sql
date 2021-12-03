@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS ocorrencias (
     flag_status VARCHAR(20),
     rubrica VARCHAR(256),
     conduta VARCHAR(256),
-    hora_ocorencia VARCHAR(8)
+    hora_ocorrencia VARCHAR(8)
 );
 
 CREATE TABLE IF NOT EXISTS ocorrencias_agregada (
