@@ -1,9 +1,7 @@
-mkdir('tmp')
+if (!dir.exists('tmp')) dir.create('tmp')
 
 library('RPostgreSQL')
 install.packages('RPostgres')
-
-con<-dbConnect(RPostgres::Postgres())
 
 db <- 'core' 
 host_db <- 'localhost'
