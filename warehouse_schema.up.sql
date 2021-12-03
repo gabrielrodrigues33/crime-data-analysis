@@ -1,7 +1,6 @@
 CREATE TABLE IF NOT EXISTS tempo (
     tempo_key SERIAL PRIMARY KEY,
-    mes_numero INT,
-    mes_nome VARCHAR(255),
+    mes INT,
     ano INT
 );
 
@@ -39,7 +38,7 @@ CREATE TABLE IF NOT EXISTS ocorrencias (
     lugar_key INTEGER REFERENCES lugar (lugar_key),
     pessoa_key INTEGER REFERENCES pessoa (pessoa_key),
 
-    num_bo VARCHAR(20),
+    num_ocorrencia VARCHAR(20),
     flag_status VARCHAR(20),
     rubrica VARCHAR(256),
     conduta VARCHAR(256),
