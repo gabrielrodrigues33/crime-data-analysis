@@ -17,7 +17,7 @@ connect <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_p
 pessoa <- dbGetQuery(connect, "select * from pessoa")
 
 # age histogram
-pessoa_quantile <- na.omit(pessoa) %>%
+pessoa_idade_quantile <- na.omit(pessoa) %>%
   summarize(lower=quantile(idade, probs=0.025),
             upper=quantile(idade, probs=0.975))
 
@@ -26,8 +26,8 @@ na.omit(pessoa) %>%
     ggplot(aes(x=idade), fill="skyblue3") +
     geom_histogram(binwidth=1, fill="#69b3a2", color="#e9ecef", alpha=0.9) +
     labs(y="Número boletins de ocorrência", x="Idade") +
-    geom_vline(data=pessoa_quantile, aes(xintercept=lower), linetype="dashed", col="red") +
-    geom_vline(data=pessoa_quantile, aes(xintercept=upper), linetype="dashed", col="red")
+    geom_vline(data=pessoa_idade_quantile, aes(xintercept=lower), linetype="dashed", col="red") +
+    geom_vline(data=pessoa_idade_quantile, aes(xintercept=upper), linetype="dashed", col="red")
 ggsave("figures/age_hist.png")
   
 # sex histogram
