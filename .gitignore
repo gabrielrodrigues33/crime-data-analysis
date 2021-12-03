@@ -39,3 +39,5 @@ vignettes/*.pdf
 .Renviron
 
 .DS_Store
+data/osasco_2014.csv
+tmp
