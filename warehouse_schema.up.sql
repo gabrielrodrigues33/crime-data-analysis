@@ -6,11 +6,11 @@ CREATE TABLE IF NOT EXISTS tempo (
 
 CREATE TABLE IF NOT EXISTS lugar (
     lugar_key SERIAL PRIMARY KEY NOT NULL,
-    latitude integer,
-    longitude integer,
+    latitude character varying(50),
+    longitude character varying(50),
     cidade character varying(50),
-    logradouro character varying(100),
-    numero_logradouro integer
+    logradouro character varying(256),
+    numero_logradouro character varying(256)
 );
 
 CREATE TABLE IF NOT EXISTS pessoa (
