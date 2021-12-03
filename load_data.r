@@ -1,6 +1,10 @@
 if (!dir.exists('tmp')) dir.create('tmp')
 
 library('RPostgreSQL')
+library('lubridate')
+library('dplyr')
+library('tidyr')
+require(data.table)
 install.packages('RPostgres')
 
 db <- 'core' 
@@ -14,9 +18,6 @@ con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port,
 df <- read.csv("data/osasco_2014.csv", sep = ",", encoding = "UTF-8")
 df$mes_ocorrencia <- month(as.IDate(df$data_ocorrencia, '%d-%m-%Y')) 
 df$idade_pessoa <- as.numeric(df$idade_pessoa)
-
-library(dplyr)
-require(data.table)
 
 df_tempo_a <- df %>% distinct(ano_registro, mes_registro) %>% rename(ano=ano_registro, mes=mes_registro)
 
