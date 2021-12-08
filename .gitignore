@@ -41,3 +41,4 @@ vignettes/*.pdf
 .DS_Store
 data/osasco_2014.csv
 tmp
+*.png
