@@ -49,3 +49,19 @@ na.omit(pessoa) %>%
     geom_bar(fill="skyblue3") +
     labs(y="Número de boletins de ocorrência", x="Cor")
 ggsave("figures/cor_hist.png")
+
+# education histogram
+na.omit(pessoa) %>%
+  filter(grau_instrucao != "NULL") %>%
+  ggplot(aes(x=grau_instrucao, fill=grau_instrucao), stat="count") +
+  geom_bar() +
+  labs(y="Número de boletins de ocorrência", x="Grau de instrução") +
+  theme(axis.ticks.x=element_blank())
+ggsave("figures/education_hist.png")
+
+# violin plot
+na.omit(pessoa) %>%
+  filter(cor != "NULL" & cor != "Vermelha" & cor != "Outros") %>%
+    ggplot(aes(x=cor, y=idade, fill=cor)) +
+    geom_violin(trim=FALSE)
+ggsave("figures/idade_cor_violin.png")
