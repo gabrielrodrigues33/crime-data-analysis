@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS ocorrencias (
     num_ocorrencia VARCHAR(20),
     flag_status VARCHAR(20),
     rubrica VARCHAR(256),
+    rubrica_reduzida VARCHAR(256),
     conduta VARCHAR(256),
     hora_ocorrencia VARCHAR(8),
     dia_ocorrencia VARCHAR(8)
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS ocorrencias_agregada (
     tempo_ocorrencia_key INTEGER REFERENCES tempo (tempo_key),
     flag_status VARCHAR(20),
     rubrica VARCHAR(256),
+    rubrica_reduzida VARCHAR(256),
     conduta VARCHAR(256),
     quantidade_ocorrencias INTEGER
 );
