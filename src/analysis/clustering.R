@@ -1,8 +1,8 @@
 # source("src/ports/get_db_remote.R")
 source("src/ports/get_db_local.R")
-con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port, user=db_user, password=db_password)  
+con <- dbConnect(RPostgres::Postgres(), dbname = db.name, host=db.host, port=db.port, user=db.user, password=db.password)  
 
-df <- read.csv("data/osasco_2014.csv", sep = ",", encoding = "UTF-8")
+df <- dbGetQuery(con, 'SELECT * FROM ocorrencias_agregada')
 
 kmodes_df <- df %>% select(flag_status, rubrica, conduta, tipo_envolvimento)
 x <- kmodes(kmodes_df, modes=3)

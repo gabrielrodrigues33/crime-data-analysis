@@ -5,12 +5,13 @@ library('tidyr')
 library(data.table)
 library('RPostgres')
 
-source("src/ports/get_db_remote.R")
-#source("src/ports/get_db_local.R")
+#source("src/ports/get_db_remote.R")
+source("src/ports/get_db_local.R")
 con <- dbConnect(RPostgres::Postgres(), dbname = db.name, host=db.host, port=db.port, user=db.user, password=db.password)  
 
 df <- read.csv("data/osasco_2014.csv", sep = ",", encoding = "UTF-8")
 df$mes_ocorrencia <- month(as.IDate(df$data_ocorrencia, '%d-%m-%Y')) 
+df$dia_ocorrencia <- day(as.IDate(df$data_ocorrencia, '%d-%m-%Y')) 
 df$idade_pessoa <- as.numeric(df$idade_pessoa)
 
 df_tempo_a <- df %>% distinct(ano_registro, mes_registro) %>% rename(ano=ano_registro, mes=mes_registro)
