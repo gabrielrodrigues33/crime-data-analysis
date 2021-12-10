@@ -6,13 +6,10 @@ library(dplyr)
 
 if (!dir.exists('figures')) dir.create('figures')
 
-db <- 'core' 
-host_db <- 'localhost'
-db_port <- '5432'  
-db_user <- 'root'  
-db_password <- 'root'
 
-connect <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port, user=db_user, password=db_password)  
+source("src/ports/get_db_remote.R")
+#source("src/ports/get_db_local.R")
+connect <- dbConnect(RPostgres::Postgres(), dbname = db.name, host=db.host, port=db.port, user=db.user, password=db.password)
 
 pessoa <- dbGetQuery(connect, "select * from pessoa")
 

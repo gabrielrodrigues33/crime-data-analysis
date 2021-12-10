@@ -68,4 +68,34 @@ raw_osasco$cor_pessoa <- trimws(raw_osasco$cor_pessoa)
 raw_osasco$profissao_pessoa <- trimws(raw_osasco$profissao_pessoa)
 raw_osasco$grau_instrucao_pessoa <- trimws(raw_osasco$grau_instrucao_pessoa)
 
+rubrica_reduzida <- raw_osasco$rubrica
+for(i in 1:length(rubrica_reduzida)) {
+  lesao_veiculo <- grepl("Lesão corporal culposa na direção de veículo automotor", rubrica_reduzida[i])
+  lesao_corporal <- grepl("Lesão corporal", rubrica_reduzida[i])
+  homicidio <- grepl("Homicídio", rubrica_reduzida[i])
+  drogas <- grepl("Droga", rubrica_reduzida[i], ignore.case = TRUE)
+  roubo <- grepl("Roubo", rubrica_reduzida[i])
+  furto <- grepl("Furto", rubrica_reduzida[i])
+  if (lesao_veiculo) {
+    rubrica_reduzida[i] <- "Lesão veículo"
+  }
+  else if (lesao_corporal) {
+    rubrica_reduzida[i] <- "Lesão corporal"
+  }
+  else if (homicidio) {
+    rubrica_reduzida[i] <- "Homicídio"
+  }
+  else if (drogas) {
+    rubrica_reduzida[i] <- "Drogas ilícitas"
+  }
+  else if (roubo) {
+    rubrica_reduzida[i] <- "Roubo"
+  }
+  else if (furto) {
+    rubrica_reduzida[i] <- "Furto"
+  }
+}
+
+raw_osasco["rubrica_reduzida"] <- rubrica_reduzida
+
 write.csv(raw_osasco, "data/osasco_2014.csv", row.names=FALSE)
