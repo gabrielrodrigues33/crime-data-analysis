@@ -1,7 +1,10 @@
 if (!dir.exists('tmp')) dir.create('tmp')
 
 library('RPostgreSQL')
-install.packages('RPostgres')
+library(dplyr)
+library('RPostgres')
+library(lubridate)
+library(data.table)
 
 db <- 'core' 
 host_db <- 'localhost'
@@ -14,9 +17,6 @@ con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port,
 df <- read.csv("data/osasco_2014.csv", sep = ",", encoding = "UTF-8")
 df$mes_ocorrencia <- month(as.IDate(df$data_ocorrencia, '%d-%m-%Y')) 
 df$idade_pessoa <- as.numeric(df$idade_pessoa)
-
-library(dplyr)
-require(data.table)
 
 df_tempo_a <- df %>% distinct(ano_registro, mes_registro) %>% rename(ano=ano_registro, mes=mes_registro)
 
@@ -56,3 +56,29 @@ df_joined <- df_joined %>% select( num_ocorrencia, flag_status, rubrica, conduta
 write.table(df_joined, 'tmp/ocorrencia_fact.csv', row.names=FALSE, col.names=FALSE, sep=',', na = "")
 dbExecute(con, 'COPY ocorrencias (num_ocorrencia, flag_status, rubrica, conduta, hora_ocorrencia, tempo_registro_key, tempo_ocorrencia_key, pessoa_key, lugar_key, delegacia_registro_key, delegacia_ocorrencia_key) FROM \'/app/tmp/ocorrencia_fact.csv\' DELIMITER \',\' CSV;')
 
+
+
+kmodes_df <- df %>% select(flag_status, rubrica, conduta, tipo_envolvimento)
+x <- kmodes(kmodes_df, modes=3)
+
+set.seed(123)
+# Compute and plot wss for k = 2 to k = 15.
+k.max <- 15
+data <- kmodes_df
+wss <- sapply(1:k.max, 
+              function(k){sum(kmodes(data, k, iter.max = 15 )$withindiff)})
+wss
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+
+x <- kmodes(kmodes_df, modes=5)
+x
+kmodes_df$flag_status <- as.factor(kmodes_df$flag_status)
+kmodes_df$rubrica <- as.factor(kmodes_df$rubrica)
+kmodes_df$conduta <- as.factor(kmodes_df$conduta)
+kmodes_df$tipo_envolvimento <- as.factor(kmodes_df$tipo_envolvimento)
+
+kmodes_df$cluster <- as.factor(x$cluster)
+summary(subset(kmodes_df, cluster == 1))
