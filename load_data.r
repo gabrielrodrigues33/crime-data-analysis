@@ -1,19 +1,13 @@
-if (!dir.exists('tmp')) dir.create('tmp')
-
 library('RPostgreSQL')
 library('lubridate')
 library('dplyr')
 library('tidyr')
-require(data.table)
-install.packages('RPostgres')
+library(data.table)
+library('RPostgres')
 
-db <- 'core' 
-host_db <- 'localhost'
-db_port <- '5432'  
-db_user <- 'root'  
-db_password <- 'root'
-
-con <- dbConnect(RPostgres::Postgres(), dbname = db, host=host_db, port=db_port, user=db_user, password=db_password)  
+source("src/ports/get_db_remote.R")
+#source("src/ports/get_db_local.R")
+con <- dbConnect(RPostgres::Postgres(), dbname = db.name, host=db.host, port=db.port, user=db.user, password=db.password)  
 
 df <- read.csv("data/osasco_2014.csv", sep = ",", encoding = "UTF-8")
 df$mes_ocorrencia <- month(as.IDate(df$data_ocorrencia, '%d-%m-%Y')) 
@@ -26,34 +20,37 @@ df_tempo <- union(df_tempo_a, df_tempo_b)
 df_tempo$tempo_key <- seq.int(nrow(df_tempo))
 
 write.table(df_tempo, 'tmp/time_dimension.csv', row.names=FALSE, col.names=FALSE, sep=',', na = "")
-dbExecute(con, 'COPY tempo (ano, mes, tempo_key) FROM \'/app/tmp/time_dimension.csv\' DELIMITER \',\' CSV;')
+dbWriteTable(con, "tempo", df_tempo, append=TRUE)
 
-df_pessoa <- df %>% distinct(tipo_envolvimento, sexo_pessoa, idade_pessoa, cor_pessoa, profissao_pessoa, grau_instrucao_pessoa) %>% replace_na(replace = list(x = "NULL"))
+df_pessoa <- df %>% distinct(tipo_envolvimento, sexo_pessoa, idade_pessoa, cor_pessoa, profissao_pessoa, grau_instrucao_pessoa) %>% replace_na(replace = list(x = "NULL")) %>% 
+    rename(idade = idade_pessoa, sexo = sexo_pessoa, cor = cor_pessoa, profissao = profissao_pessoa, grau_instrucao = grau_instrucao_pessoa) 
+
 df_pessoa$pessoa_key <- seq.int(nrow(df_pessoa))
-write.table(df_pessoa, 'tmp/pessoa_dimension.csv', row.names=FALSE, col.names=FALSE, sep=',', na = "")
-dbExecute(con, 'COPY pessoa (tipo_envolvimento, sexo, idade, cor, profissao, grau_instrucao, pessoa_key) FROM \'/app/tmp/pessoa_dimension.csv\' DELIMITER \',\' CSV;')
+dbWriteTable(con, "pessoa", df_pessoa, append=TRUE)
 
 df_lugar <- df %>% distinct(latitude, longitude, cidade, logradouro, numero_logradouro)
 df_lugar$lugar_key <- seq.int(nrow(df_lugar))
-write.table(df_lugar, 'tmp/lugar_dimension.csv', row.names=FALSE, col.names=FALSE, sep=',', na = "")
-dbExecute(con, 'COPY lugar (latitude, longitude, cidade, logradouro, numero_logradouro, lugar_key) FROM \'/app/tmp/lugar_dimension.csv\' DELIMITER \',\' CSV;')
+dbWriteTable(con, "lugar", df_lugar, append=TRUE)
 
 delegacia.registro.df <- df %>% select('nome_departamento', 'nome_seccional', 'nome_delegacia')
 delegacia.circ.df <- df %>% select('nome_departamento_circ', 'nome_seccional_circ', 'nome_delegacia_circ')
 colnames(delegacia.circ.df) <- c('nome_departamento', 'nome_seccional', 'nome_delegacia')
 delegacia.df <- union(delegacia.registro.df, delegacia.circ.df)
 delegacia.df$delegacia_key <- seq.int(nrow(delegacia.df))
-write.table(delegacia.df, 'tmp/delegacia_dimension.csv', row.names=FALSE, col.names=FALSE, sep = ',')
-dbExecute(con, 'COPY delegacia (nome_departamento, nome_seccional, nome_delegacia, delegacia_key) FROM \'/app/tmp/delegacia_dimension.csv\' DELIMITER \',\' CSV;')
+dbWriteTable(con, "delegacia", delegacia.df, append=TRUE)
 
 df_ocorrencia <- df %>% distinct(ano_registro, mes_registro, num_ocorrencia, flag_status, rubrica, conduta, hora_ocorrencia)
 df_joined <- inner_join(df, df_tempo, by = c("ano_registro" = "ano", "mes_registro" = "mes")) %>% rename(tempo_registro_key = tempo_key)
 df_joined <- inner_join(df_joined, df_tempo, by = c("ano_ocorrencia" = "ano", "mes_ocorrencia" = "mes")) %>% rename(tempo_ocorrencia_key = tempo_key)
-df_joined <- inner_join(df_joined, df_pessoa, by = c("tipo_envolvimento", "sexo_pessoa", "idade_pessoa", "cor_pessoa", "profissao_pessoa", "grau_instrucao_pessoa")) 
+df_joined <- inner_join(df_joined, df_pessoa, by = c("tipo_envolvimento"="tipo_envolvimento", "sexo_pessoa"="sexo", "idade_pessoa"="idade", "cor_pessoa"="cor", "profissao_pessoa"="profissao", "grau_instrucao_pessoa"="grau_instrucao")) 
 df_joined <- inner_join(df_joined, df_lugar, by = c("latitude", "longitude", "cidade", "logradouro", "numero_logradouro")) 
 df_joined <- inner_join(df_joined, delegacia.df, by = c("nome_departamento_circ" = "nome_departamento", "nome_seccional_circ" = "nome_seccional", "nome_delegacia_circ" = "nome_delegacia")) %>% rename(delegacia_ocorrencia_key = delegacia_key)
 df_joined <- inner_join(df_joined, delegacia.df, by = c("nome_departamento", "nome_seccional", "nome_delegacia")) %>% rename(delegacia_registro_key = delegacia_key)
 df_joined <- df_joined %>% select( num_ocorrencia, flag_status, rubrica, conduta, hora_ocorrencia, tempo_registro_key, tempo_ocorrencia_key, pessoa_key, lugar_key, delegacia_registro_key, delegacia_ocorrencia_key)
-write.table(df_joined, 'tmp/ocorrencia_fact.csv', row.names=FALSE, col.names=FALSE, sep=',', na = "")
-dbExecute(con, 'COPY ocorrencias (num_ocorrencia, flag_status, rubrica, conduta, hora_ocorrencia, tempo_registro_key, tempo_ocorrencia_key, pessoa_key, lugar_key, delegacia_registro_key, delegacia_ocorrencia_key) FROM \'/app/tmp/ocorrencia_fact.csv\' DELIMITER \',\' CSV;')
+dbWriteTable(con, "ocorrencias", df_joined, append=TRUE)
 
+dbExecute(con, '
+    INSERT INTO ocorrencias_agregada (rubrica, conduta, flag_status, tempo_ocorrencia_key, quantidade_ocorrencias)
+    SELECT rubrica, conduta, flag_status, tempo_ocorrencia_key, count(*) 
+    from ocorrencias 
+    GROUP BY rubrica, conduta, flag_status, tempo_ocorrencia_key')

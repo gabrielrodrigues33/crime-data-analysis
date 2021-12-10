@@ -42,3 +42,4 @@ vignettes/*.pdf
 data/osasco_2014.csv
 tmp
 *.png
+.env

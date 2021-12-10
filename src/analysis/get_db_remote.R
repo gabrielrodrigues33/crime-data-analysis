@@ -1,0 +1,5 @@
+db.name <- 'core' 
+db.host <- 'localhost'
+db.port <- '5432'  
+db.user <- 'root'  
+db.password <- 'root'
