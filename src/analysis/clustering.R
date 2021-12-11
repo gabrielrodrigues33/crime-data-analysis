@@ -1,5 +1,5 @@
-# source("src/ports/get_db_remote.R")
-source("src/ports/get_db_local.R")
+source("src/ports/get_db_remote.R")
+#source("src/ports/get_db_local.R")
 con <- dbConnect(RPostgres::Postgres(), dbname = db.name, host=db.host, port=db.port, user=db.user, password=db.password)  
 library(clustMixType)
 
@@ -8,15 +8,17 @@ library(cluster)
 library(factoextra)
 library('fpc')
 library(caret)
+library(sf)
+library(ggplot2)
 
 df <- dbGetQuery(con, "
-  SELECT latitude, longitude, rubrica_reduzida, 
-  CASE WHEN hora_ocorrencia<> 'NULL' THEN SUBSTRING(hora_ocorrencia, 1, 2)::INTEGER ELSE NULL END AS hora_ocorrencia 
+  SELECT latitude, longitude, rubrica_reduzida
   FROM ocorrencias
   JOIN lugar  ON ocorrencias.lugar_key  = lugar.lugar_key
 ")
 df$latitude <- as.numeric(df$latitude)
 df$longitude <- as.numeric(df$longitude)
+df$hora_ocorrencia <- as.numeric(df$hora_ocorrencia)
 df <- na.omit(df)
 
 
@@ -35,8 +37,18 @@ plot(1:k.max, wss,
      xlab="Number of clusters K",
      ylab="Total within-clusters sum of squares")
 
-x <- kproto(df_processed, k=6)
-x
+df_result <- data.frame(
+  latitude = df$latitude,
+  longitude = df$longitude,
+  cluster = as.factor(x$cluster),
+  rubrica_reduzida = as.factor(df$rubrica_reduzida)
+)
 
-df_processed$cluster <- as.factor(x$cluster)
-summary(subset(df_processed, cluster == 6))
+# Código de plot
+my_sf <- st_as_sf(df_result, coords = c('longitude', 'latitude'))
+                  
+my_sf <- st_set_crs(my_sf, 4326)
+                  
+ ggplot(my_sf) + 
+    geom_sf(aes(color = cluster))
+                  
