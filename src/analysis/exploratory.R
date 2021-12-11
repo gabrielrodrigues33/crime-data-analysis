@@ -12,6 +12,7 @@ source("src/ports/get_db_remote.R")
 connect <- dbConnect(RPostgres::Postgres(), dbname = db.name, host=db.host, port=db.port, user=db.user, password=db.password)
 
 pessoa <- dbGetQuery(connect, "select * from pessoa")
+ocorrencias <- dbGetQuery(connect, "select * from ocorrencias")
 
 # age histogram
 pessoa_idade_quantile <- na.omit(pessoa) %>%
@@ -62,3 +63,14 @@ na.omit(pessoa) %>%
     ggplot(aes(x=cor, y=idade, fill=cor)) +
     geom_violin(trim=FALSE)
 ggsave("figures/idade_cor_violin.png")
+
+# time histogram
+hora_ocorrencia <- ocorrencias[ocorrencias$hora_ocorrencia != "NULL",]$hora_ocorrencia
+hora_ocorrencia <- strptime(hora_ocorrencia, format="%H:%M")
+hora_ocorrencia <- as.numeric(format(hora_ocorrencia, format="%H"))
+png("figures/time_hist.png")
+hist(hora_ocorrencia, breaks=23, xlim=c(0,23), col="skyblue3",
+     xlab="Hora", ylab="Número de boletins de ocorrência", main=NULL,
+     xaxt='n')
+axis(1, at=seq(0,23))
+dev.off()
