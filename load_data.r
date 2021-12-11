@@ -51,7 +51,7 @@ df_joined <- df_joined %>% select( num_ocorrencia, flag_status, rubrica, rubrica
 dbWriteTable(con, "ocorrencias", df_joined, append=TRUE)
 
 dbExecute(con, '
-    INSERT INTO ocorrencias_agregada (rubrica, conduta, flag_status, tempo_ocorrencia_key, quantidade_ocorrencias)
-    SELECT rubrica, conduta, flag_status, tempo_ocorrencia_key, count(*) 
+    INSERT INTO ocorrencias_agregada (rubrica, conduta, flag_status, tempo_ocorrencia_key, rubrica_reduzida, quantidade_ocorrencias)
+    SELECT rubrica, conduta, flag_status, tempo_ocorrencia_key, rubrica_reduzida, count(*) 
     from ocorrencias 
-    GROUP BY rubrica, conduta, flag_status, tempo_ocorrencia_key')
+    GROUP BY rubrica, conduta, flag_status, tempo_ocorrencia_key, rubrica_reduzida')
