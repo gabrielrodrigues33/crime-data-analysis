@@ -3,6 +3,13 @@ library(RPostgres)
 library(data.table)
 library(ggplot2)
 library(dplyr)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(RCurl)
+library(XML)
+library(stringr)
+
 
 if (!dir.exists('figures')) dir.create('figures')
 
@@ -74,3 +81,11 @@ hist(hora_ocorrencia, breaks=23, xlim=c(0,23), col="skyblue3",
      xaxt='n')
 axis(1, at=seq(0,23))
 dev.off()
+
+# word cloud
+#profissao_pessoa <- pessoa[pessoa$profissao != "NULL" & pessoa$profissao != "POLICIAL MILITAR",]
+profissao_pessoa <- pessoa[pessoa$profissao != "NULL",]
+profissao_pessoa <- as.data.frame(table(profissao_pessoa$profissao))
+wordcloud(words = profissao_pessoa$Var1, freq = profissao_pessoa$Freq, min.freq = 80,
+          max.words=100, random.order=FALSE,
+          colors=brewer.pal(8, "Dark2"))
