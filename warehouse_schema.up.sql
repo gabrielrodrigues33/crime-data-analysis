@@ -55,3 +55,9 @@ CREATE TABLE IF NOT EXISTS ocorrencias_agregada (
     conduta VARCHAR(256),
     quantidade_ocorrencias INTEGER
 );
+
+CREATE TABLE IF NOT EXISTS clustering_result (
+    cluster INTEGER,
+    latitude character varying(50),
+    longitude character varying(50)
+);

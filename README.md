@@ -1,4 +1,4 @@
-# crime-data-analysis
+# Osasco Crime Data Analysis
 
 ## Load Credentials (optional)
 
@@ -12,3 +12,13 @@ source .env
 ```
 
 Use `remote` if you want to use remote server (credentials must be set), defaults to local.
+
+# Complete setup script
+```
+source .env
+./prepare-database.sh (local|remote)
+Rscript src/preprocessing/preprocessing.R
+Rscript src/load_data.R
+Rscript src/analysis/clustering.R
+```
+
