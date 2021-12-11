@@ -31,8 +31,8 @@ wss <- sapply(1:k.max,
 wss
 plot(1:k.max, wss,
      type="b", pch = 19, frame = FALSE, 
-     xlab="Number of clusters K",
-     ylab="Total within-clusters sum of squares")
+     xlab="Número de Clusters",
+     ylab="Erro total dentro dos clusters")
 
 x <- kmeans(df_processed, 4)
 df_result <- data.frame(
